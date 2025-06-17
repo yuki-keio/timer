@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja" dir="ltr">
+  <head>
+    <link href="https://fonts.googleapis.com/css?family=Alegreya+Sans+SC:300" rel="stylesheet">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="./timer.css">
+    <script type="text/javascript" src="./jquery-3.6.0.min.js">
+    </script>
+    <script type="text/javascript" src="./timer.js"></script>
+
+    <title>シンプルタイマー</title>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Simple Timer</h1>
+      <div class="description">
+        軽量で高速なタイマー。時間を設定してSTARTボタンを押すだけで開始できます。
+      </div>
+
+      <div class="timer-input-display">
+        <input type="text" id="time-input" class="time-display-input" value="05:00" placeholder="MM:SS">
+        <div class="input-hint">時間を入力してください（例：05:30）</div>
+      </div>
+
+      <div class="preset-buttons">
+        <button class="preset-btn" data-minutes="1">1分</button>
+        <button class="preset-btn" data-minutes="3">3分</button>
+        <button class="preset-btn" data-minutes="5">5分</button>
+        <button class="preset-btn" data-minutes="10">10分</button>
+        <button class="preset-btn" data-minutes="15">15分</button>
+        <button class="preset-btn" data-minutes="30">30分</button>
+      </div>
+
+      <div class="control-buttons">
+        <button type="button" id="start-btn" class="btn btn-primary">スタート</button>
+        <button type="button" id="reset-btn" class="btn btn-tertiary">リセット</button>
+      </div>
+
+      <div class="settings">
+        <label class="setting-item">
+          <input type="checkbox" id="sound-check" checked>
+          <span class="checkmark"></span>
+          音声読み上げ
+        </label>
+      </div>
+
+      <div class="help-section">
+        <button type="button" id="help-btn" class="help-button">
+          <img src="./info.png" alt="ヘルプ">
+          使い方
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
