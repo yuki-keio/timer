@@ -8,18 +8,17 @@
     </script>
     <script type="text/javascript" src="./timer.js"></script>
 
-    <title>シンプルタイマー</title>
+    <title>スマートタイマー</title>
   </head>
   <body>
     <div class="container">
-      <h1>Simple Timer</h1>
+      <h1>Smart Timer</h1>
       <div class="description">
-        軽量で高速なタイマー。時間を設定してSTARTボタンを押すだけで開始できます。
+        ショートカットキー、ボタン、またはテキスト入力で時間を設定できます。<br>
       </div>
 
       <div class="timer-input-display">
-        <input type="text" id="time-input" class="time-display-input" value="05:00" placeholder="MM:SS">
-        <div class="input-hint">時間を入力してください（例：05:30）</div>
+        <input type="text" id="time-input" class="time-display-input">
       </div>
 
       <div class="preset-buttons">
@@ -38,9 +37,14 @@
 
       <div class="settings">
         <label class="setting-item">
-          <input type="checkbox" id="sound-check" checked>
+          <input type="checkbox" id="sound-check">
           <span class="checkmark"></span>
           音声読み上げ
+        </label>
+        <label class="setting-item">
+          <input type="checkbox" id="alarm-check">
+          <span class="checkmark"></span>
+          アラーム音
         </label>
       </div>
 

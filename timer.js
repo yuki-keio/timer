@@ -1,13 +1,13 @@
 class SimpleTimer {
   constructor() {
     this.timer = null;
-    this.totalSeconds = 0;
-    this.remainingSeconds = 0;
+    this.totalSeconds = 180;
+    this.remainingSeconds = 180;
     this.isRunning = false;
     this.isPaused = false;
-    this.soundEnabled = true;
 
     this.initializeElements();
+    this.loadSettings();
     this.setupEventListeners();
     this.initializeSpeech();
     this.updateDisplay();
@@ -19,6 +19,7 @@ class SimpleTimer {
       startBtn: document.getElementById('start-btn'),
       resetBtn: document.getElementById('reset-btn'),
       soundCheck: document.getElementById('sound-check'),
+      alarmCheck: document.getElementById('alarm-check'),
       helpBtn: document.getElementById('help-btn'),
       presetBtns: document.querySelectorAll('.preset-btn')
     };
@@ -29,6 +30,11 @@ class SimpleTimer {
     this.speech.lang = 'ja-JP';
     this.speech.rate = 1.0;
     this.speech.pitch = 1.0;
+
+    // アラーム音を初期化
+    this.alarmAudio = new Audio('./alarm.mp3');
+    this.alarmAudio.preload = 'auto';
+    this.alarmAudio.volume = 0.7;
   }
 
   setupEventListeners() {
@@ -41,8 +47,18 @@ class SimpleTimer {
     // 音声設定
     this.elements.soundCheck.addEventListener('change', (e) => {
       this.soundEnabled = e.target.checked;
+      this.saveSettings(); // 設定を保存
       if (this.soundEnabled) {
         this.speak('音声がONになりました');
+      }
+    });
+
+    // アラーム設定
+    this.elements.alarmCheck.addEventListener('change', (e) => {
+      this.alarmEnabled = e.target.checked;
+      this.saveSettings(); // 設定を保存
+      if (this.alarmEnabled) {
+        this.speak('アラーム音がONになりました');
       }
     });
 
@@ -63,6 +79,31 @@ class SimpleTimer {
 
     // キーボードショートカット
     document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+  }
+
+  loadSettings() {
+    // localStorageから音声設定を読み込み、デフォルトはfalse（オフ）
+    const savedSoundEnabled = localStorage.getItem('timerSoundEnabled');
+    this.soundEnabled = savedSoundEnabled === 'true';
+
+    // localStorageからアラーム設定を読み込み、デフォルトはtrue（オン）
+    const savedAlarmEnabled = localStorage.getItem('timerAlarmEnabled');
+    this.alarmEnabled = savedAlarmEnabled !== 'false'; // デフォルトはON
+
+    // チェックボックスの状態を設定に合わせる
+    if (this.elements.soundCheck) {
+      this.elements.soundCheck.checked = this.soundEnabled;
+    }
+    if (this.elements.alarmCheck) {
+      this.elements.alarmCheck.checked = this.alarmEnabled;
+    }
+  }
+
+  saveSettings() {
+    // 音声設定をlocalStorageに保存
+    localStorage.setItem('timerSoundEnabled', this.soundEnabled.toString());
+    // アラーム設定をlocalStorageに保存
+    localStorage.setItem('timerAlarmEnabled', this.alarmEnabled.toString());
   }
 
   parseTimeInput(timeString) {
@@ -232,6 +273,11 @@ class SimpleTimer {
     this.updateButtons();
     this.updateDisplayState();
 
+    // アラーム音を再生
+    if (this.alarmEnabled) {
+      this.playAlarm();
+    }
+
     this.speak('タイマー終了です！');
 
     // 視覚的な通知
@@ -277,14 +323,32 @@ class SimpleTimer {
     }
   }
 
+  playAlarm() {
+    if (this.alarmAudio) {
+      this.alarmAudio.currentTime = 0; // 最初から再生
+      this.alarmAudio.play().catch(error => {
+        console.warn('アラーム音の再生に失敗しました:', error);
+      });
+    }
+  }
+
   handleKeyboard(e) {
     // 入力フィールドにフォーカスがある場合はキーボードショートカットを無効化
     if (document.activeElement === this.elements.timeInput) {
       return;
     }
 
+    // 1-9キー: 分数設定（1なら1分、2なら2分...）
+    if (e.key >= '1' && e.key <= '9') {
+      e.preventDefault();
+      const minutes = parseInt(e.key);
+      this.setPresetTime(minutes);
+      if (this.soundEnabled) {
+        this.speak(`${minutes}分に設定しました`);
+      }
+    }
     // スペースキー: スタート/一時停止
-    if (e.code === 'Space') {
+    else if (e.code === 'Space') {
       e.preventDefault();
       this.handleStartPause();
     }
@@ -314,14 +378,17 @@ class SimpleTimer {
 ・最大999分59秒まで設定可能
 
 ■ キーボードショートカット
+・1-9キー: 時間設定（1なら1分、2なら2分...9なら9分）
 ・スペースキー: スタート/一時停止/再開
 ・Enterキー: スタート/一時停止/再開
 ・Rキー: リセット
 
 ■ 機能
 ・音声読み上げON/OFF切り替え
+・アラーム音ON/OFF切り替え（デフォルト：ON）
 ・1分ごとの残り時間通知
 ・最後の10秒カウントダウン
+・設定はブラウザに自動保存されます
     `.trim();
 
     alert(helpText);

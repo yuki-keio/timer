@@ -94,8 +94,21 @@ h1 {
   opacity: 0.8;
 }
 
+.keyboard-hint {
+  color: #888;
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
 .time-display-input.running + .input-hint,
 .time-display-input.finished + .input-hint {
+  display: none;
+}
+
+.time-display-input.running ~ .keyboard-hint,
+.time-display-input.finished ~ .keyboard-hint {
   display: none;
 }
 
