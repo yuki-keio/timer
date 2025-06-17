@@ -9,6 +9,8 @@
     <script type="text/javascript" src="./timer.js"></script>
 
     <title>スマートタイマー</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="無料のブラウザタイマーのサイトです。ショートカットキー、ボタン、またはテキスト入力で時間を設定できます。音声読み上げも可能です。">
   </head>
   <body>
     <div class="container">
@@ -33,6 +35,7 @@
       <div class="control-buttons">
         <button type="button" id="start-btn" class="btn btn-primary">スタート</button>
         <button type="button" id="reset-btn" class="btn btn-tertiary">リセット</button>
+        <button type="button" id="fullscreen-btn" class="btn btn-fullscreen" style="display: none;">大画面</button>
       </div>
 
       <div class="settings">
@@ -50,9 +53,17 @@
 
       <div class="help-section">
         <button type="button" id="help-btn" class="help-button">
-          <img src="./info.png" alt="ヘルプ">
-          使い方
+          <img src="./info.png" alt="ショートカット一覧">
+          ショートカット一覧
         </button>
+      </div>
+    </div>
+
+    <!-- フルスクリーン表示用のオーバーレイ -->
+    <div id="fullscreen-overlay" class="fullscreen-overlay" style="display: none;">
+      <div class="fullscreen-content">
+        <div class="fullscreen-timer" id="fullscreen-timer">00:00</div>
+        <button type="button" id="exit-fullscreen-btn" class="exit-fullscreen-btn">×</button>
       </div>
     </div>
   </body>

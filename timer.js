@@ -5,6 +5,7 @@ class SimpleTimer {
     this.remainingSeconds = 180;
     this.isRunning = false;
     this.isPaused = false;
+    this.isFullscreen = false; // フルスクリーン状態を管理
 
     this.initializeElements();
     this.loadSettings();
@@ -21,7 +22,11 @@ class SimpleTimer {
       soundCheck: document.getElementById('sound-check'),
       alarmCheck: document.getElementById('alarm-check'),
       helpBtn: document.getElementById('help-btn'),
-      presetBtns: document.querySelectorAll('.preset-btn')
+      presetBtns: document.querySelectorAll('.preset-btn'),
+      fullscreenBtn: document.getElementById('fullscreen-btn'),
+      fullscreenOverlay: document.getElementById('fullscreen-overlay'),
+      fullscreenTimer: document.getElementById('fullscreen-timer'),
+      exitFullscreenBtn: document.getElementById('exit-fullscreen-btn')
     };
   }
 
@@ -79,6 +84,12 @@ class SimpleTimer {
 
     // キーボードショートカット
     document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+
+    // フルスクリーンボタン
+    this.elements.fullscreenBtn.addEventListener('click', () => this.enterFullscreen());
+
+    // フルスクリーン終了ボタン
+    this.elements.exitFullscreenBtn.addEventListener('click', () => this.exitFullscreen());
   }
 
   loadSettings() {
@@ -291,6 +302,9 @@ class SimpleTimer {
     const seconds = this.remainingSeconds % 60;
     const display = this.formatTime(minutes, seconds);
     this.elements.timeInput.value = display;
+
+    // フルスクリーン表示も更新
+    this.updateFullscreenTimer();
   }
 
   updateDisplayState() {
@@ -298,10 +312,22 @@ class SimpleTimer {
 
     if (this.remainingSeconds <= 0) {
       this.elements.timeInput.classList.add('finished');
+      // フルスクリーンタイマーにも終了クラスを追加
+      if (this.isFullscreen) {
+        this.elements.fullscreenTimer.classList.add('finished');
+      }
     } else if (this.isRunning) {
       this.elements.timeInput.classList.add('running');
+      // フルスクリーンタイマーから終了クラスを削除
+      if (this.isFullscreen) {
+        this.elements.fullscreenTimer.classList.remove('finished');
+      }
     } else if (this.isPaused) {
       this.elements.timeInput.classList.add('paused');
+      // フルスクリーンタイマーから終了クラスを削除
+      if (this.isFullscreen) {
+        this.elements.fullscreenTimer.classList.remove('finished');
+      }
     }
   }
 
@@ -309,9 +335,18 @@ class SimpleTimer {
     if (this.isRunning) {
       this.elements.startBtn.textContent = '一時停止';
       this.elements.startBtn.className = 'btn btn-secondary';
+      // タイマーが動いている時のみフルスクリーンボタンを表示
+      this.elements.fullscreenBtn.style.display = 'inline-block';
     } else {
       this.elements.startBtn.textContent = this.isPaused ? '再開' : 'スタート';
       this.elements.startBtn.className = 'btn btn-primary';
+      // タイマーが停止中はフルスクリーンボタンを非表示
+      if (!this.isPaused) {
+        this.elements.fullscreenBtn.style.display = 'none';
+      } else {
+        // 一時停止中はフルスクリーンボタンを表示
+        this.elements.fullscreenBtn.style.display = 'inline-block';
+      }
     }
   }
 
@@ -333,6 +368,10 @@ class SimpleTimer {
   }
 
   handleKeyboard(e) {
+    if (e.key === 'Escape' && this.isFullscreen) {
+      this.exitFullscreen();
+    }
+
     // 入力フィールドにフォーカスがある場合はキーボードショートカットを無効化
     if (document.activeElement === this.elements.timeInput) {
       return;
@@ -366,32 +405,40 @@ class SimpleTimer {
 
   showHelp() {
     const helpText = `
-【Simple Timer 使い方】
-
-■ 基本操作
-・時間入力欄に時間を入力（例：05:30）またはボタンを使用
-・スタートボタンを押してタイマー開始
-
-■ 時間入力方法
-・MM:SS形式で入力（例：05:30 = 5分30秒）
-・数字のみでも入力可能（例：5 = 5分）
-・最大999分59秒まで設定可能
-
 ■ キーボードショートカット
 ・1-9キー: 時間設定（1なら1分、2なら2分...9なら9分）
 ・スペースキー: スタート/一時停止/再開
 ・Enterキー: スタート/一時停止/再開
 ・Rキー: リセット
-
-■ 機能
-・音声読み上げON/OFF切り替え
-・アラーム音ON/OFF切り替え（デフォルト：ON）
-・1分ごとの残り時間通知
-・最後の10秒カウントダウン
-・設定はブラウザに自動保存されます
     `.trim();
 
     alert(helpText);
+  }
+
+  enterFullscreen() {
+    if (this.isFullscreen) return;
+
+    this.isFullscreen = true;
+    this.elements.fullscreenOverlay.style.display = 'flex';
+
+    // フルスクリーン時のタイマー表示を更新
+    this.updateFullscreenTimer();
+  }
+
+  exitFullscreen() {
+    if (!this.isFullscreen) return;
+
+    this.isFullscreen = false;
+    this.elements.fullscreenOverlay.style.display = 'none';
+  }
+
+  updateFullscreenTimer() {
+    if (!this.isFullscreen) return;
+
+    const minutes = Math.floor(this.remainingSeconds / 60);
+    const seconds = this.remainingSeconds % 60;
+    const display = this.formatTime(minutes, seconds);
+    this.elements.fullscreenTimer.textContent = display;
   }
 }
 
