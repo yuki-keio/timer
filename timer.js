@@ -335,18 +335,9 @@ class SimpleTimer {
     if (this.isRunning) {
       this.elements.startBtn.textContent = '一時停止';
       this.elements.startBtn.className = 'btn btn-secondary';
-      // タイマーが動いている時のみフルスクリーンボタンを表示
-      this.elements.fullscreenBtn.style.display = 'inline-block';
     } else {
       this.elements.startBtn.textContent = this.isPaused ? '再開' : 'スタート';
       this.elements.startBtn.className = 'btn btn-primary';
-      // タイマーが停止中はフルスクリーンボタンを非表示
-      if (!this.isPaused) {
-        this.elements.fullscreenBtn.style.display = 'none';
-      } else {
-        // 一時停止中はフルスクリーンボタンを表示
-        this.elements.fullscreenBtn.style.display = 'inline-block';
-      }
     }
   }
 
