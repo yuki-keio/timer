@@ -91,7 +91,9 @@ class SimpleTimer {
       btn.addEventListener('click', (e) => {
         const unit = e.currentTarget.dataset.unit;
         const isPlus = e.currentTarget.classList.contains('time-btn-up');
-        this.adjustTime(unit, isPlus ? 1 : -1);
+        // data-step属性があればその値、なければ1
+        const step = parseInt(e.currentTarget.dataset.step) || 1;
+        this.adjustTime(unit, isPlus ? step : -step);
       });
     });
 
@@ -189,20 +191,24 @@ class SimpleTimer {
       let seconds = parseInt(this.elements.secondsInput.value) || 0;
       seconds += delta;
 
-      // 秒が60以上または0未満の場合、分を調整
+      // stepが10や20でも正しく分・秒を調整
+      let minutes = parseInt(this.elements.minutesInput.value) || 0;
       if (seconds >= 60) {
-        seconds = 0;
-        let minutes = parseInt(this.elements.minutesInput.value) || 0;
-        minutes = Math.min(999, minutes + 1);
+        minutes += Math.floor(seconds / 60);
+        seconds = seconds % 60;
+        minutes = Math.min(999, minutes);
         this.elements.minutesInput.value = minutes;
       } else if (seconds < 0) {
-        let minutes = parseInt(this.elements.minutesInput.value) || 0;
-        if (minutes > 0) {
-          seconds = 59;
-          this.elements.minutesInput.value = minutes - 1;
+        let absSec = Math.abs(seconds);
+        let dec = Math.ceil(absSec / 60);
+        if (minutes >= dec) {
+          minutes -= dec;
+          seconds = (seconds % 60 + 60) % 60;
         } else {
+          minutes = 0;
           seconds = 0;
         }
+        this.elements.minutesInput.value = minutes;
       }
 
       this.elements.secondsInput.value = seconds.toString().padStart(2, '0');

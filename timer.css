@@ -51,7 +51,7 @@ h1 {
   background: #f8f9fa;
   border: 3px solid #e9ecef;
   border-radius: 15px;
-  padding: 2rem 1.5rem;
+  padding: .5rem 1.5rem;
   transition: all 0.3s ease;
 }
 
@@ -116,22 +116,29 @@ h1 {
   color: #333;
   font-family: monospace;
 }
-
+.time-btn-group {
+  display: flex;
+  gap: 12px;
+}
 .time-btn {
   background: transparent;
   color: #adb5bd;
   border: none;
   border-radius: 4px;
   width: 38px;
-  height: 32px;
+  height: 30px;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   justify-content: center;
   user-select: none;
-  opacity: 0.5;
+  opacity: 0.7;
   padding: 0.2rem;
+}
+.time-btn[data-step] {
+  font-size: .8rem;
+  opacity: .6;
 }
 
 .time-btn:hover {
@@ -203,12 +210,35 @@ h1 {
   color: white;
 }
 
+
 .control-buttons {
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.7rem;
   justify-content: center;
+  align-items: center;
   margin-bottom: 2rem;
-  flex-wrap: wrap;
+}
+
+.start-row {
+  width: 100%;
+  display: flex;
+  justify-content:space-around;
+}
+
+#start-btn {
+  width: 100%;
+}
+
+.bottom-row {
+  width: 100%;
+  display: flex;
+  justify-content:space-around;
+  gap: 1rem;
+}
+
+#reset-btn, #fullscreen-btn {
+  width: calc(50% - 0.5rem);
 }
 
 .btn {
@@ -342,42 +372,32 @@ h1 {
     padding: 1.5rem;
     margin: 1rem;
   }
-  
   h1 {
     font-size: 2rem;
   }
-  
   .time-controls {
     padding: 1.5rem 1rem;
     gap: 1rem;
   }
-  
   .time-input {
     font-size: 2.5rem;
     width: 80px;
   }
-  
   .time-separator {
     font-size: 1.2rem;
   }
-  
   .time-btn {
     width: 24px;
     height: 20px;
     font-size: 0.6rem;
   }
-  
   .preset-buttons {
     grid-template-columns: repeat(2, 1fr);
   }
-  
   .control-buttons {
     flex-direction: column;
   }
-  
-  .btn {
-    min-width: 100%;
-  }
+
 }
 
 /* フルスクリーン表示用のスタイル */
