@@ -222,11 +222,6 @@ h1 {
   min-width: 120px;
 }
 
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .btn-primary {
   background: #28a745;
   color: white;
@@ -398,6 +393,7 @@ h1 {
   align-items: center;
   justify-content: center;
   transition: background 0.4s ease;
+  cursor: pointer;
 }
 
 /* フルスクリーン表示中の状態に応じた背景色 */
