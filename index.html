@@ -16,11 +16,28 @@
     <div class="container">
       <h1>Smart Timer</h1>
       <div class="description">
-        ショートカットキー、ボタン、またはテキスト入力で時間を設定できます。<br>
+        ボタン、テキスト入力、1~9のショートカットキーで時間を設定できます。<br>
       </div>
 
       <div class="timer-input-display">
-        <input type="text" id="time-input" class="time-display-input">
+        <div class="time-controls">
+          <div class="time-unit">
+            <button class="time-btn time-btn-up" data-unit="minutes">▲</button>
+            <div class="time-input-wrapper">
+              <input type="number" id="minutes-input" class="time-input" min="0" max="999" value="3">
+            </div>
+            <button class="time-btn time-btn-down" data-unit="minutes">▼</button>
+          </div>
+          <div class="time-separator">分</div>
+          <div class="time-unit">
+            <button class="time-btn time-btn-up" data-unit="seconds">▲</button>
+            <div class="time-input-wrapper">
+              <input type="number" id="seconds-input" class="time-input" min="0" max="59" value="00">
+            </div>
+            <button class="time-btn time-btn-down" data-unit="seconds">▼</button>
+          </div>  <div class="time-separator">秒</div>
+        </div>
+ 
       </div>
 
       <div class="preset-buttons">
@@ -35,7 +52,7 @@
       <div class="control-buttons">
         <button type="button" id="start-btn" class="btn btn-primary">スタート</button>
         <button type="button" id="reset-btn" class="btn btn-tertiary">リセット</button>
-        <button type="button" id="fullscreen-btn" class="btn btn-fullscreen" style="display: none;">大画面</button>
+        <button type="button" id="fullscreen-btn" class="btn btn-fullscreen">大画面</button>
       </div>
 
       <div class="settings">

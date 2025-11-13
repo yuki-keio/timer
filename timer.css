@@ -43,78 +43,134 @@ h1 {
   text-align: center;
 }
 
-.time-display-input {
-  font-size: 4rem;
-  font-weight: bold;
-  color: #333;
+.time-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
   background: #f8f9fa;
   border: 3px solid #e9ecef;
   border-radius: 15px;
-  padding: 1rem;
-  font-family: monospace;
-  letter-spacing: 0.1em;
-  text-align: center;
-  width: 100%;
-  max-width: 300px;
+  padding: 2rem 1.5rem;
   transition: all 0.3s ease;
 }
 
-.time-display-input:focus {
+.time-controls.running {
+  background: #d4edda;
+  border-color: #28a745;
+  pointer-events: none;
+}
+
+.time-controls.paused {
+  background: #fff3cd;
+  border-color: #ffc107;
+}
+
+.time-controls.finished {
+  background: #f8d7da;
+  border-color: #dc3545;
+  animation: pulse 1.3s infinite;
+  pointer-events: none;
+}
+
+.time-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.time-input {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #333;
+  background: white;
+  border: 2px solid #dee2e6;
+  border-radius: 10px;
+  padding: 0.5rem;
+  font-family: monospace;
+  text-align: center;
+  width: 100px;
+  transition: all 0.3s ease;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.time-input::-webkit-outer-spin-button,
+.time-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.time-input:focus {
   outline: none;
   border-color: #007bff;
-  background: white;
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
 }
 
-.time-display-input.running {
-  background: #d4edda;
-  border-color: #28a745;
-  color: #155724;
+
+
+.time-separator {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  font-family: monospace;
+}
+
+.time-btn {
+  background: transparent;
+  color: #adb5bd;
+  border: none;
+  border-radius: 4px;
+  width: 38px;
+  height: 32px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  user-select: none;
+  opacity: 0.5;
+  padding: 0.2rem;
+}
+
+.time-btn:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.time-btn:active {
+  transform: scale(0.9);
+}
+
+.time-btn-up {
+  color: #57c460;
+  align-items: flex-end;
+  margin-bottom: -0.4rem;
+}
+
+.time-btn-down {
+  color: #e97454;
+  align-items: flex-start;
+  margin-top: -0.4rem;
+}
+
+.running .time-btn-up, 
+.running .time-btn-down, .finished .time-btn-up, 
+.finished .time-btn-down {
   pointer-events: none;
+  visibility: hidden;
 }
 
-.time-display-input.paused {
-  background: #fff3cd;
-  border-color: #ffc107;
-  color: #856404;
-}
-
-.time-display-input.finished {
-  background: #f8d7da;
-  border-color: #dc3545;
-  color: #721c24;
-  animation: pulse 1s infinite;
+.time-controls.running .time-btn,
+.time-controls.finished .time-btn {
   pointer-events: none;
-}
-
-.input-hint {
-  color: #666;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  opacity: 0.8;
-}
-
-.keyboard-hint {
-  color: #888;
-  font-size: 0.8rem;
-  margin-top: 0.3rem;
-  opacity: 0.7;
-  font-style: italic;
-}
-
-.time-display-input.running + .input-hint,
-.time-display-input.finished + .input-hint {
-  display: none;
-}
-
-.time-display-input.running ~ .keyboard-hint,
-.time-display-input.finished ~ .keyboard-hint {
-  display: none;
+  opacity: 0.2;
 }
 
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50% { transform: scale(1.03); }
 }
 
 .preset-buttons {
@@ -296,8 +352,24 @@ h1 {
     font-size: 2rem;
   }
   
-  .time-display-input {
-    font-size: 3rem;
+  .time-controls {
+    padding: 1.5rem 1rem;
+    gap: 1rem;
+  }
+  
+  .time-input {
+    font-size: 2.5rem;
+    width: 80px;
+  }
+  
+  .time-separator {
+    font-size: 1.2rem;
+  }
+  
+  .time-btn {
+    width: 24px;
+    height: 20px;
+    font-size: 0.6rem;
   }
   
   .preset-buttons {
@@ -325,6 +397,16 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.4s ease;
+}
+
+/* フルスクリーン表示中の状態に応じた背景色 */
+.fullscreen-overlay.paused {
+  background: linear-gradient(135deg, #b89111 0%, #ff7700 100%);
+}
+
+.fullscreen-overlay.finished {
+  background: linear-gradient(135deg, #ff6b6b 0%, #c44569 100%);
 }
 
 .fullscreen-content {
@@ -372,21 +454,33 @@ h1 {
   transform: scale(1.1);
 }
 
-/* フルスクリーン表示中のタイマーが終了した場合のアニメーション */
+/* フルスクリーン表示での終了状態 */
 .fullscreen-timer.finished {
-  animation: fullscreen-pulse 1s infinite;
-  color: #ff6b6b;
+  color: #ffffff;
 }
 
-@keyframes fullscreen-pulse {
-  0%, 100% { 
-    transform: scale(1); 
-    text-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
+/* クリックフィードバックアニメーション */
+.fullscreen-content.click-feedback {
+  animation: click-flash 0.3s ease-out;
+}
+
+@keyframes click-flash {
+  0% {
+    background: rgba(255, 255, 255, 0.2);
   }
-  50% { 
-    transform: scale(1.05); 
-    text-shadow: 0 0 30px rgba(255, 107, 107, 1);
+  100% {
+    background: transparent;
   }
+}
+
+/* 一時停止状態の視覚的フィードバック */
+.fullscreen-timer.paused {
+  opacity: 0.7;
+}
+
+/* 実行中の状態表示 */
+.fullscreen-timer.running {
+  opacity: 1;
 }
 
 /* レスポンシブ対応 */

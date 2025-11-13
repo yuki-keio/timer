@@ -16,7 +16,10 @@ class SimpleTimer {
 
   initializeElements() {
     this.elements = {
-      timeInput: document.getElementById('time-input'),
+      minutesInput: document.getElementById('minutes-input'),
+      secondsInput: document.getElementById('seconds-input'),
+      timeControls: document.querySelector('.time-controls'),
+      timeBtns: document.querySelectorAll('.time-btn'),
       startBtn: document.getElementById('start-btn'),
       resetBtn: document.getElementById('reset-btn'),
       soundCheck: document.getElementById('sound-check'),
@@ -78,9 +81,19 @@ class SimpleTimer {
     });
 
     // 時間入力フィールドの変更
-    this.elements.timeInput.addEventListener('input', () => this.updateTimeFromInput());
-    this.elements.timeInput.addEventListener('blur', () => this.validateTimeInput());
-    this.elements.timeInput.addEventListener('focus', () => this.onInputFocus());
+    this.elements.minutesInput.addEventListener('input', () => this.updateTimeFromInput());
+    this.elements.secondsInput.addEventListener('input', () => this.updateTimeFromInput());
+    this.elements.minutesInput.addEventListener('blur', () => this.validateMinutesInput());
+    this.elements.secondsInput.addEventListener('blur', () => this.validateSecondsInput());
+
+    // プラス・マイナスボタン
+    this.elements.timeBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const unit = e.currentTarget.dataset.unit;
+        const isPlus = e.currentTarget.classList.contains('time-btn-up');
+        this.adjustTime(unit, isPlus ? 1 : -1);
+      });
+    });
 
     // キーボードショートカット
     document.addEventListener('keydown', (e) => this.handleKeyboard(e));
@@ -89,7 +102,26 @@ class SimpleTimer {
     this.elements.fullscreenBtn.addEventListener('click', () => this.enterFullscreen());
 
     // フルスクリーン終了ボタン
-    this.elements.exitFullscreenBtn.addEventListener('click', () => this.exitFullscreen());
+    this.elements.exitFullscreenBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // イベントの伝播を止める
+      this.exitFullscreen();
+    });
+
+    // フルスクリーンオーバーレイのクリックでタイマーを開始/一時停止
+    this.elements.fullscreenOverlay.addEventListener('click', (e) => {
+      // exitボタン自体のクリックは除外（stopPropagationで処理済み）
+      this.handleStartPause();
+      // クリックフィードバックを表示
+      this.showClickFeedback();
+    });
+  }
+
+  showClickFeedback() {
+    const fullscreenContent = this.elements.fullscreenOverlay.querySelector('.fullscreen-content');
+    fullscreenContent.classList.add('click-feedback');
+    setTimeout(() => {
+      fullscreenContent.classList.remove('click-feedback');
+    }, 300);
   }
 
   loadSettings() {
@@ -118,7 +150,7 @@ class SimpleTimer {
   }
 
   parseTimeInput(timeString) {
-    // MM:SS形式の文字列を解析
+    // この関数は互換性のために残しますが、新しいUIでは使用しません
     const cleanTime = timeString.replace(/[^\d:]/g, '');
     const parts = cleanTime.split(':');
 
@@ -146,6 +178,39 @@ class SimpleTimer {
     return { minutes, seconds };
   }
 
+  adjustTime(unit, delta) {
+    if (this.isRunning) return;
+
+    if (unit === 'minutes') {
+      let minutes = parseInt(this.elements.minutesInput.value) || 0;
+      minutes = Math.max(0, Math.min(999, minutes + delta));
+      this.elements.minutesInput.value = minutes;
+    } else if (unit === 'seconds') {
+      let seconds = parseInt(this.elements.secondsInput.value) || 0;
+      seconds += delta;
+
+      // 秒が60以上または0未満の場合、分を調整
+      if (seconds >= 60) {
+        seconds = 0;
+        let minutes = parseInt(this.elements.minutesInput.value) || 0;
+        minutes = Math.min(999, minutes + 1);
+        this.elements.minutesInput.value = minutes;
+      } else if (seconds < 0) {
+        let minutes = parseInt(this.elements.minutesInput.value) || 0;
+        if (minutes > 0) {
+          seconds = 59;
+          this.elements.minutesInput.value = minutes - 1;
+        } else {
+          seconds = 0;
+        }
+      }
+
+      this.elements.secondsInput.value = seconds.toString().padStart(2, '0');
+    }
+
+    this.updateTimeFromInput();
+  }
+
   formatTime(minutes, seconds) {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
@@ -153,7 +218,9 @@ class SimpleTimer {
   updateTimeFromInput() {
     if (this.isRunning) return; // タイマー実行中は更新しない
 
-    const { minutes, seconds } = this.parseTimeInput(this.elements.timeInput.value);
+    const minutes = parseInt(this.elements.minutesInput.value) || 0;
+    const seconds = parseInt(this.elements.secondsInput.value) || 0;
+
     this.totalSeconds = minutes * 60 + seconds;
     this.remainingSeconds = this.totalSeconds;
 
@@ -163,24 +230,33 @@ class SimpleTimer {
     this.updatePresetButtons(matchingPreset ? minutes : null);
   }
 
-  validateTimeInput() {
+  validateMinutesInput() {
     if (this.isRunning) return;
 
-    const { minutes, seconds } = this.parseTimeInput(this.elements.timeInput.value);
-    const formattedTime = this.formatTime(minutes, seconds);
-    this.elements.timeInput.value = formattedTime;
+    let minutes = parseInt(this.elements.minutesInput.value) || 0;
+    minutes = Math.min(Math.max(minutes, 0), 999);
+    this.elements.minutesInput.value = minutes;
+    this.updateTimeFromInput();
+  }
+
+  validateSecondsInput() {
+    if (this.isRunning) return;
+
+    let seconds = parseInt(this.elements.secondsInput.value) || 0;
+    seconds = Math.min(Math.max(seconds, 0), 59);
+    this.elements.secondsInput.value = seconds.toString().padStart(2, '0');
     this.updateTimeFromInput();
   }
 
   onInputFocus() {
     if (!this.isRunning && !this.isPaused) {
-      this.elements.timeInput.select();
+      // フォーカス時の処理（必要に応じて）
     }
   }
 
   setPresetTime(minutes) {
-    const formattedTime = this.formatTime(minutes, 0);
-    this.elements.timeInput.value = formattedTime;
+    this.elements.minutesInput.value = minutes;
+    this.elements.secondsInput.value = "00"
     this.updateTimeFromInput();
     this.updatePresetButtons(minutes);
   }
@@ -212,6 +288,7 @@ class SimpleTimer {
 
     if (!this.isPaused) {
       this.remainingSeconds = this.totalSeconds;
+      this.updateDisplay();
     }
 
     this.isRunning = true;
@@ -300,33 +377,44 @@ class SimpleTimer {
   updateDisplay() {
     const minutes = Math.floor(this.remainingSeconds / 60);
     const seconds = this.remainingSeconds % 60;
-    const display = this.formatTime(minutes, seconds);
-    this.elements.timeInput.value = display;
+    this.elements.minutesInput.value = minutes;
+    this.elements.secondsInput.value = seconds.toString().padStart(2, '0');
 
     // フルスクリーン表示も更新
     this.updateFullscreenTimer();
   }
 
   updateDisplayState() {
-    this.elements.timeInput.classList.remove('running', 'paused', 'finished');
+    const { timeControls, fullscreenTimer, fullscreenOverlay } = this.elements;
+
+    timeControls.classList.remove('running', 'paused', 'finished');
+    if (fullscreenTimer) {
+      fullscreenTimer.classList.remove('running', 'paused', 'finished');
+    }
+    if (fullscreenOverlay) {
+      fullscreenOverlay.classList.remove('paused', 'finished');
+    }
 
     if (this.remainingSeconds <= 0) {
-      this.elements.timeInput.classList.add('finished');
-      // フルスクリーンタイマーにも終了クラスを追加
-      if (this.isFullscreen) {
-        this.elements.fullscreenTimer.classList.add('finished');
+      timeControls.classList.add('finished');
+      if (fullscreenTimer) {
+        fullscreenTimer.classList.add('finished');
+      }
+      if (fullscreenOverlay) {
+        fullscreenOverlay.classList.add('finished');
       }
     } else if (this.isRunning) {
-      this.elements.timeInput.classList.add('running');
-      // フルスクリーンタイマーから終了クラスを削除
-      if (this.isFullscreen) {
-        this.elements.fullscreenTimer.classList.remove('finished');
+      timeControls.classList.add('running');
+      if (fullscreenTimer) {
+        fullscreenTimer.classList.add('running');
       }
     } else if (this.isPaused) {
-      this.elements.timeInput.classList.add('paused');
-      // フルスクリーンタイマーから終了クラスを削除
-      if (this.isFullscreen) {
-        this.elements.fullscreenTimer.classList.remove('finished');
+      timeControls.classList.add('paused');
+      if (fullscreenTimer) {
+        fullscreenTimer.classList.add('paused');
+      }
+      if (fullscreenOverlay) {
+        fullscreenOverlay.classList.add('paused');
       }
     }
   }
@@ -335,18 +423,9 @@ class SimpleTimer {
     if (this.isRunning) {
       this.elements.startBtn.textContent = '一時停止';
       this.elements.startBtn.className = 'btn btn-secondary';
-      // タイマーが動いている時のみフルスクリーンボタンを表示
-      this.elements.fullscreenBtn.style.display = 'inline-block';
     } else {
       this.elements.startBtn.textContent = this.isPaused ? '再開' : 'スタート';
       this.elements.startBtn.className = 'btn btn-primary';
-      // タイマーが停止中はフルスクリーンボタンを非表示
-      if (!this.isPaused) {
-        this.elements.fullscreenBtn.style.display = 'none';
-      } else {
-        // 一時停止中はフルスクリーンボタンを表示
-        this.elements.fullscreenBtn.style.display = 'inline-block';
-      }
     }
   }
 
@@ -373,13 +452,15 @@ class SimpleTimer {
     }
 
     // 入力フィールドにフォーカスがある場合はキーボードショートカットを無効化
-    if (document.activeElement === this.elements.timeInput) {
+    if (document.activeElement === this.elements.minutesInput ||
+      document.activeElement === this.elements.secondsInput) {
       return;
     }
 
     // 1-9キー: 分数設定（1なら1分、2なら2分...）
     if (e.key >= '1' && e.key <= '9') {
       e.preventDefault();
+      if (this.isRunning) return;
       const minutes = parseInt(e.key);
       this.setPresetTime(minutes);
       if (this.soundEnabled) {
