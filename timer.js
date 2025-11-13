@@ -458,11 +458,13 @@ class SimpleTimer {
     }
 
     // 1-9キー: 分数設定（1なら1分、2なら2分...）
-    if (e.key >= '1' && e.key <= '9') {
+    if (e.key >= '0' && e.key <= '9') {
       e.preventDefault();
       if (this.isRunning) return;
       const minutes = parseInt(e.key);
       this.setPresetTime(minutes);
+      this.remainingSeconds = minutes * 60;
+      this.updateFullscreenTimer();
       if (this.soundEnabled) {
         this.speak(`${minutes}分に設定しました`);
       }
@@ -487,11 +489,11 @@ class SimpleTimer {
   showHelp() {
     const helpText = `
 ■ キーボードショートカット
-・1-9キー: 時間設定（1なら1分、2なら2分...9なら9分）
+・0-9キー: 時間設定（0なら0分、1なら1分、...9なら9分）
 ・スペースキー: スタート/一時停止/再開
 ・Enterキー: スタート/一時停止/再開
 ・Rキー: リセット
-    `.trim();
+  `.trim();
 
     alert(helpText);
   }
@@ -502,6 +504,11 @@ class SimpleTimer {
     this.isFullscreen = true;
     this.elements.fullscreenOverlay.style.display = 'flex';
 
+    // フルスクリーンAPIを呼び出す
+    if (this.elements.fullscreenOverlay.requestFullscreen) {
+      this.elements.fullscreenOverlay.requestFullscreen();
+    }
+
     // フルスクリーン時のタイマー表示を更新
     this.updateFullscreenTimer();
   }
@@ -511,6 +518,11 @@ class SimpleTimer {
 
     this.isFullscreen = false;
     this.elements.fullscreenOverlay.style.display = 'none';
+
+    // フルスクリーン解除
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
   }
 
   updateFullscreenTimer() {

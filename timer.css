@@ -431,8 +431,8 @@ h1 {
 
 .exit-fullscreen-btn {
   position: absolute;
-  top: 30px;
-  right: 30px;
+  top: 70px;
+  right: 50px;
   background: rgba(255, 255, 255, 0.2);
   border: 2px solid rgba(255, 255, 255, 0.5);
   color: white;
