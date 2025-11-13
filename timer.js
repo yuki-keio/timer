@@ -57,7 +57,7 @@ class SimpleTimer {
       this.soundEnabled = e.target.checked;
       this.saveSettings(); // 設定を保存
       if (this.soundEnabled) {
-        this.speak('音声がONになりました');
+        this.speak('読み上げがONになりました');
       }
     });
 
