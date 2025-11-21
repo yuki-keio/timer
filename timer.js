@@ -24,6 +24,10 @@ class SimpleTimer {
       resetBtn: document.getElementById('reset-btn'),
       soundCheck: document.getElementById('sound-check'),
       alarmCheck: document.getElementById('alarm-check'),
+      alarmSettings: document.getElementById('alarm-settings'),
+      alarmVolume: document.getElementById('alarm-volume'),
+      alarmTestBtn: document.getElementById('alarm-test-btn'),
+      alarmRepeat: document.getElementById('alarm-repeat'),
       helpBtn: document.getElementById('help-btn'),
       presetBtns: document.querySelectorAll('.preset-btn'),
       fullscreenBtn: document.getElementById('fullscreen-btn'),
@@ -46,6 +50,31 @@ class SimpleTimer {
   }
 
   setupEventListeners() {
+    // アラーム音量スライダー
+    if (this.elements.alarmVolume) {
+      this.elements.alarmVolume.addEventListener('input', (e) => {
+        this.alarmVolume = parseInt(e.target.value) / 100;
+        if (this.alarmAudio) this.alarmAudio.volume = this.alarmVolume;
+        this.saveSettings();
+      });
+    }
+
+    // アラーム試聴ボタン
+    if (this.elements.alarmTestBtn) {
+      this.elements.alarmTestBtn.addEventListener('click', () => {
+        this.playAlarm();
+      });
+    }
+
+    // アラーム繰り返し回数
+    if (this.elements.alarmRepeat) {
+      this.elements.alarmRepeat.addEventListener('input', (e) => {
+        let val = parseInt(e.target.value) || 1;
+        val = Math.max(1, Math.min(10, val));
+        this.alarmRepeat = val;
+        this.saveSettings();
+      });
+    }
     // スタートボタン（スタート/一時停止/再開を切り替え）
     this.elements.startBtn.addEventListener('click', () => this.handleStartPause());
 
@@ -68,6 +97,8 @@ class SimpleTimer {
       if (this.alarmEnabled) {
         this.speak('アラーム音がONになりました');
       }
+      // アラーム関連UIを表示/非表示
+      this.updateAlarmUIVisibility();
     });
 
     // ヘルプボタン
@@ -127,6 +158,22 @@ class SimpleTimer {
   }
 
   loadSettings() {
+    // localStorageから音量設定を読み込み、デフォルトは0.7
+    const savedVolume = localStorage.getItem('timerAlarmVolume');
+    this.alarmVolume = savedVolume ? parseFloat(savedVolume) : 0.7;
+    if (this.elements.alarmVolume) {
+      this.elements.alarmVolume.value = Math.round(this.alarmVolume * 100);
+    }
+    if (this.alarmAudio) {
+      this.alarmAudio.volume = this.alarmVolume;
+    }
+
+    // localStorageから繰り返し回数を読み込み、デフォルトは3
+    const savedRepeat = localStorage.getItem('timerAlarmRepeat');
+    this.alarmRepeat = savedRepeat ? parseInt(savedRepeat) : 3;
+    if (this.elements.alarmRepeat) {
+      this.elements.alarmRepeat.value = this.alarmRepeat;
+    }
     // localStorageから音声設定を読み込み、デフォルトはfalse（オフ）
     const savedSoundEnabled = localStorage.getItem('timerSoundEnabled');
     this.soundEnabled = savedSoundEnabled === 'true';
@@ -142,9 +189,26 @@ class SimpleTimer {
     if (this.elements.alarmCheck) {
       this.elements.alarmCheck.checked = this.alarmEnabled;
     }
+    // アラーム関連UIの表示状態を反映
+    this.updateAlarmUIVisibility();
+  }
+
+  // アラーム関連の設定UIをON/OFFに応じて表示/非表示する
+  updateAlarmUIVisibility() {
+    const alarmSettingsEl = this.elements.alarmSettings;
+    if (!alarmSettingsEl) return;
+    if (this.alarmEnabled) {
+      alarmSettingsEl.style.display = '';
+    } else {
+      alarmSettingsEl.style.display = 'none';
+    }
   }
 
   saveSettings() {
+    // 音量設定をlocalStorageに保存
+    localStorage.setItem('timerAlarmVolume', this.alarmVolume?.toString() ?? '0.7');
+    // 繰り返し回数をlocalStorageに保存
+    localStorage.setItem('timerAlarmRepeat', this.alarmRepeat?.toString() ?? '3');
     // 音声設定をlocalStorageに保存
     localStorage.setItem('timerSoundEnabled', this.soundEnabled.toString());
     // アラーム設定をlocalStorageに保存
@@ -445,10 +509,20 @@ class SimpleTimer {
 
   playAlarm() {
     if (this.alarmAudio) {
-      this.alarmAudio.currentTime = 0; // 最初から再生
-      this.alarmAudio.play().catch(error => {
-        console.warn('アラーム音の再生に失敗しました:', error);
-      });
+      let repeat = this.alarmRepeat || 3;
+      let playCount = 0;
+      const playOnce = () => {
+        this.alarmAudio.currentTime = 0;
+        this.alarmAudio.volume = this.alarmVolume || 0.7;
+        this.alarmAudio.play().catch(() => { });
+        playCount++;
+        if (playCount < repeat) {
+          this.alarmAudio.onended = playOnce;
+        } else {
+          this.alarmAudio.onended = null;
+        }
+      };
+      playOnce();
     }
   }
 
