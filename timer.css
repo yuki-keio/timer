@@ -323,10 +323,12 @@ h1 {
   border: none;
   cursor: pointer;
   transition: background 0.2s;
+  min-width: 70px !important;
 }
 .btn-small:hover {
   background: #0056b3;
 }
+
 
 .setting-item {
   display: flex;
@@ -335,6 +337,7 @@ h1 {
   cursor: pointer;
   font-size: 1rem;
   gap: 0.5rem;
+  margin: 7px 0;
 }
 
 .setting-item input[type="checkbox"] {
